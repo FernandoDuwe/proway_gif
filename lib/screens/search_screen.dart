@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:proway_gif/models/giphy_model.dart';
 import 'package:proway_gif/repositories/giphy_repository.dart';
-import 'package:proway_gif/screens/search_screen.dart';
 import 'package:proway_gif/widgets/giphy_tile.dart';
 import 'package:proway_gif/widgets/page_navigator.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class SearchScreen extends StatefulWidget {
+  final String search;
+
+  const SearchScreen({required this.search, super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _SearchScreenState extends State<SearchScreen> {
   int page = 0;
 
-  TextEditingController searchController = TextEditingController();
-
-  Widget _buildGrid(List<GiphyModel> list) {
+  Widget _getGrid(List<GiphyModel> list) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, mainAxisSpacing: 0),
+      gridDelegate:
+          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       itemCount: list.length,
       itemBuilder: (context, index) => GiphyTile(model: list[index]),
     );
@@ -30,21 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: TextField(
-        controller: searchController,
-        decoration: InputDecoration(
-            labelText: "Pesquisar",
-            suffix: IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) =>
-                        SearchScreen(search: searchController.text),
-                  ));
-                },
-                icon: Icon(Icons.search))),
-      )),
+        title: Text("Resultados para: " + widget.search),
+      ),
       body: FutureBuilder(
-        future: GiphyRepository.getTrends(offset: (25 * page)),
+        future: GiphyRepository.search(widget.search, offset: this.page * 25),
         builder: (context, snapshot) {
           if (snapshot.hasError)
             return Center(
@@ -59,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: CircularProgressIndicator(),
             );
 
-          return _buildGrid(snapshot.data!);
+          return _getGrid(snapshot.data!);
         },
       ),
       bottomNavigationBar: PageNavigator(
@@ -70,9 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         onPriorClick: () {
-          setState(() {
-            this.page -= 1;
-          });
+          this.page -= 1;
         },
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:proway_gif/models/giphy_model.dart';
 
@@ -14,7 +15,32 @@ class GiphyTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.network(model.imageURL),
+          Image.network(
+            this.model.imageURL,
+            errorBuilder: (context, error, stackTrace) {
+              return Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.broken_image,
+                      color: Colors.red,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(error.toString())
+                  ],
+                ),
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          ),
           SizedBox(
             height: 40,
           ),
