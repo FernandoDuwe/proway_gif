@@ -21,8 +21,6 @@ class GiphyRepository {
     // Efetuando a requisição
     http.Response response = await http.get(uri);
 
-    print(response.body);
-
     // Convertendo a resposta em Json para Lista
     var list = jsonDecode(response.body);
 
@@ -32,6 +30,36 @@ class GiphyRepository {
     (list["data"] as List<dynamic>).forEach((element) {
       gifs.add(GiphyModel.fromJSON(element as Map<String, dynamic>));
     });
+
+    return gifs;
+  }
+
+  static Future<List<GiphyModel>> search(String search,
+      {int limit = 25, int offset = 0}) async {
+    String apiKey = await ConfigRepository.getAPIKey();
+
+    // Montando a requisição de pesquisa
+    Uri uri = Uri.https("api.giphy.com", "v1/gifs/search", {
+      "api_key": apiKey,
+      "q": search,
+      "limit": limit.toString(),
+      "offset": offset.toString(),
+      "rating": "g",
+      "lang": "pt",
+      "bundle": "messaging_non_clips"
+    });
+
+    // Efetuando a requisição
+    http.Response response = await http.get(uri);
+
+    //Convertendo o conteúdo da resposta de String para obj
+    var responseObj = jsonDecode(response.body);
+
+    List<GiphyModel> gifs = [];
+
+    // Desserealizando e populando a lista de objetos
+    (responseObj["data"] as List<dynamic>).forEach((element) =>
+        gifs.add(GiphyModel.fromJSON(element as Map<String, dynamic>)));
 
     return gifs;
   }
